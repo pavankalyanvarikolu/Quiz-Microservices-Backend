@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quiz-db
+  namespace: quiz-app-namespace
+  labels:
+    app: quiz-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quiz-db
+  template:
+    metadata:
+      name: quiz-db
+      labels:
+        app: quiz-db
+    spec:
+      containers:
+        - name: quiz-db
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: quiz-service-config
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: quiz-db
+spec:
+  selector:
+    app: quiz-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP

@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: question-db
+  namespace: quiz-app-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: question-db
+  template:
+    metadata:
+      labels:
+        app: question-db
+    spec:
+      containers:
+        - name: question-db
+          image: postgres:latest
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: question-service-configmap
+          restartPolicy: always
+          volumeMounts:
+            - name: question-db-data
+              mountPath: /var/lib/postgresql/data
+      restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: question-db
+spec:
+  selector:
+    app: question-db
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+  type: ClusterIP
